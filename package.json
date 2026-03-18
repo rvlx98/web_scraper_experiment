@@ -1,0 +1,28 @@
+{
+  "name": "ai-web-analyst-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MVP: AI web analytik – crawling, analýza brandu a vizuálního stylu, JSON + report.",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "cli": "node src/cli.js",
+    "format": "prettier . --write"
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2",
+    "express": "^4.19.2",
+    "normalize-url": "^8.0.1",
+    "p-limit": "^6.2.0",
+    "playwright": "^1.52.0",
+    "robots-parser": "^3.0.1",
+    "turndown": "^7.2.0",
+    "undici": "^7.7.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.0"
+  }
+}

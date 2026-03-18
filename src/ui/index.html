@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AI web analytik (MVP)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        /* Clean / serious / tense: ~60% white, 30% black, 10% red accents */
+        color-scheme: light;
+        --white: #f4f6f8;
+        --black: #07090d;
+        --ink: #0b0f17;
+        --muted: rgba(11, 15, 23, 0.62);
+        --line: rgba(11, 15, 23, 0.12);
+        --surface: #ffffff;
+        --surface2: #f0f2f5;
+        --shadow: rgba(7, 9, 13, 0.18);
+
+        --accent: #c1121f; /* red */
+        --accent2: #1f2a3a; /* cold ink */
+        --danger: #c1121f;
+        --ok: #1b7f5a;
+
+        /* Theme tokens (default = light) */
+        --pageBase: #ffffff;
+        --pageInk: var(--ink);
+        --pageMuted: var(--muted);
+        --link: var(--accent2);
+        --inputLine: rgba(7, 9, 13, 0.18);
+        --buttonBorder: rgba(7, 9, 13, 0.38);
+        --buttonFg: var(--ink);
+        --buttonHoverBg: rgba(7, 9, 13, 0.04);
+        --healthPillOpacity: 0.9;
+      }
+      html[data-theme="dark"] {
+        color-scheme: dark;
+        --pageBase: #07090d;
+        --pageInk: #f4f6f8;
+        --pageMuted: rgba(244, 246, 248, 0.62);
+        --link: rgba(244, 246, 248, 0.86);
+        --inputLine: rgba(244, 246, 248, 0.22);
+        --buttonBorder: rgba(244, 246, 248, 0.26);
+        --buttonFg: #f4f6f8;
+        --buttonHoverBg: rgba(244, 246, 248, 0.06);
+        --healthPillOpacity: 0.95;
+      }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background:
+          /* subtle white "halo" from top to break the tension a bit */
+          radial-gradient(1100px 520px at 55% -18%, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.55) 28%, rgba(255, 255, 255, 0) 62%),
+          /* Smooth red -> white */
+          linear-gradient(0deg, rgba(193, 18, 31, 1) 0%, rgba(255, 255, 255, 1) 62%, rgba(255, 255, 255, 1) 100%);
+        background-attachment: fixed;
+        color: var(--pageInk);
+      }
+      html[data-theme="dark"] body {
+        background:
+          /* darker top halo (same color as bg, just lifts the center slightly) */
+          radial-gradient(1100px 520px at 55% -18%, rgba(7, 9, 13, 0.95) 0%, rgba(7, 9, 13, 0.55) 30%, rgba(7, 9, 13, 0) 66%),
+          /* Smooth red -> black */
+          linear-gradient(0deg, rgba(193, 18, 31, 0.98) 0%, rgba(7, 9, 13, 1) 62%, rgba(7, 9, 13, 1) 100%);
+        background-attachment: fixed;
+      }
+      body::before {
+        content: none;
+      }
+      .wrap {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 24px 16px 80px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        margin-bottom: 18px;
+      }
+      .brand {
+        max-width: 56ch;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0;
+        letter-spacing: 0.2px;
+      }
+      .title {
+        font-family: "Orbitron", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        text-shadow: 0 0 18px rgba(193, 18, 31, 0.22);
+      }
+      p {
+        margin: 6px 0 0;
+        color: var(--pageMuted);
+      }
+      .card {
+        /* Single-canvas layout: no "panel/card" look */
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        position: relative;
+      }
+      .card::after {
+        content: none;
+      }
+      .divider {
+        display: none;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--pageMuted);
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      input,
+      button {
+        font: inherit;
+      }
+      input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 2px;
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid var(--inputLine);
+        background: transparent;
+        color: var(--pageInk);
+        outline: none;
+      }
+      input:focus {
+        border-bottom-color: color-mix(in oklab, var(--accent) 65%, var(--black) 35%);
+        box-shadow: none;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 160px 160px;
+        gap: 18px;
+        align-items: end;
+      }
+      @media (max-width: 800px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+      button {
+        padding: 10px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--buttonBorder);
+        background: transparent;
+        color: var(--buttonFg);
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        cursor: pointer;
+        position: relative;
+        box-shadow: none;
+      }
+      button::after {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        border-radius: 999px;
+        pointer-events: none;
+        background: linear-gradient(90deg, rgba(193, 18, 31, 0.0), rgba(193, 18, 31, 0.7), rgba(193, 18, 31, 0.0));
+        opacity: 0.16;
+        filter: blur(0.2px);
+      }
+      button:hover {
+        border-color: rgba(193, 18, 31, 0.55);
+        background: var(--buttonHoverBg);
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .status {
+        margin-top: 14px;
+        font-size: 13px;
+        color: var(--pageMuted);
+      }
+      .status b {
+        color: var(--pageInk);
+      }
+      .links {
+        margin-top: 12px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      a {
+        color: var(--link);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      .pill {
+        /* kept for backward-compat; do not look like a chip */
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        padding: 0;
+        border: none;
+        background: transparent;
+        border-radius: 0;
+        backdrop-filter: none;
+      }
+      .link {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid rgba(7, 9, 13, 0.14);
+      }
+      .link:hover {
+        border-bottom-color: rgba(193, 18, 31, 0.45);
+        text-decoration: none;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+      .dot.ok {
+        background: var(--ok);
+      }
+      .dot.bad {
+        background: var(--danger);
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 12px;
+      }
+      footer {
+        margin-top: 18px;
+        color: var(--pageMuted);
+        font-size: 12px;
+      }
+      .hint {
+        border-left: none;
+        padding-left: 0;
+        margin-top: 16px;
+      }
+      .hint::before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        margin-right: 10px;
+        border-radius: 50%;
+        background: rgba(193, 18, 31, 0.75);
+        vertical-align: middle;
+        box-shadow: 0 0 0 3px rgba(193, 18, 31, 0.12);
+      }
+
+      .themeToggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .themeBtn {
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--buttonBorder);
+        background: transparent;
+        color: var(--buttonFg);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+      }
+      .themeBtn:hover {
+        border-color: rgba(193, 18, 31, 0.55);
+        background: var(--buttonHoverBg);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <h1 class="title">Scraper</h1>
+          <p>Zadej URL. Aplikace projde web a vytvoří JSON + report s brand a style analýzou.</p>
+        </div>
+        <div class="themeToggle">
+          <button class="themeBtn mono" id="themeToggle" type="button" aria-label="Toggle theme">Light</button>
+          <div class="pill mono" id="healthPill" style="opacity: 0.9">
+            <span class="dot ok" id="healthDot"></span>
+            <span class="mono" id="healthText">checking…</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="card">
+        <div class="row">
+          <div>
+            <label for="url">URL webu</label>
+            <input id="url" placeholder="https://example.com" />
+          </div>
+          <div>
+            <label for="maxPages">Max stránek</label>
+            <input id="maxPages" value="12" />
+          </div>
+          <div>
+            <button id="run">Analyzovat</button>
+          </div>
+        </div>
+        <div class="status" id="status"></div>
+        <div class="links" id="links"></div>
+        <footer class="hint">
+          Tip: pro rychlý MVP běh držte max stránek ~8–15. Pro složitější weby lze zvýšit.
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const statusEl = $("status");
+      const linksEl = $("links");
+      const runBtn = $("run");
+      const healthDot = $("healthDot");
+      const healthText = $("healthText");
+      const healthPill = $("healthPill");
+      const themeToggle = $("themeToggle");
+
+      function applyTheme(theme) {
+        const t = theme === "dark" ? "dark" : "light";
+        document.documentElement.dataset.theme = t;
+        themeToggle.textContent = t === "dark" ? "Dark" : "Light";
+        themeToggle.setAttribute("aria-pressed", t === "dark" ? "true" : "false");
+        if (healthPill) healthPill.style.opacity = getComputedStyle(document.documentElement).getPropertyValue("--healthPillOpacity") || "0.9";
+        try {
+          localStorage.setItem("scraperTheme", t);
+        } catch {}
+      }
+
+      (function initTheme() {
+        let saved = null;
+        try {
+          saved = localStorage.getItem("scraperTheme");
+        } catch {}
+        applyTheme(saved || "light");
+      })();
+
+      themeToggle.addEventListener("click", () => {
+        const current = document.documentElement.dataset.theme || "light";
+        applyTheme(current === "dark" ? "light" : "dark");
+      });
+
+      function setStatus(html) {
+        statusEl.innerHTML = html;
+      }
+      function setLinks(items) {
+        linksEl.innerHTML = "";
+        for (const it of items) {
+          const a = document.createElement("a");
+          a.href = it.href;
+          a.target = "_blank";
+          a.rel = "noreferrer";
+          a.textContent = it.label;
+          a.className = "link mono";
+          linksEl.appendChild(a);
+        }
+      }
+
+      async function checkHealth() {
+        try {
+          const r = await fetch("/health");
+          if (!r.ok) throw new Error("bad");
+          healthDot.className = "dot ok";
+          healthText.textContent = "server ok";
+        } catch {
+          healthDot.className = "dot bad";
+          healthText.textContent = "server down";
+        }
+      }
+      checkHealth();
+
+      async function sleep(ms) {
+        return new Promise((r) => setTimeout(r, ms));
+      }
+
+      async function pollJob(id) {
+        for (;;) {
+          const r = await fetch(`/api/jobs/${id}`);
+          const j = await r.json();
+          if (j.status === "queued" || j.status === "running") {
+            setStatus(`Stav: <b>${j.status}</b> (job ${id})…`);
+            await sleep(1200);
+            continue;
+          }
+          if (j.status === "failed") {
+            setStatus(`Stav: <b>${j.status}</b> (job ${id})<br/><span class="mono">${(j.error || "").slice(0, 4000)}</span>`);
+            setLinks([]);
+            return;
+          }
+          setStatus(`Stav: <b>${j.status}</b> (job ${id})`);
+          setLinks([
+            { label: "Poznatky", href: `/api/jobs/${id}/insights.md` },
+            { label: "AI prompt", href: `/api/jobs/${id}/report.prompt.md` }
+          ]);
+          return;
+        }
+      }
+
+      runBtn.addEventListener("click", async () => {
+        const url = $("url").value.trim();
+        const maxPages = Number($("maxPages").value || "12");
+        if (!url) return setStatus("Zadej URL.");
+        runBtn.disabled = true;
+        setLinks([]);
+        setStatus("Spouštím analýzu…");
+        try {
+          const r = await fetch("/api/analyze", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ url, maxPages })
+          });
+          const j = await r.json();
+          if (!r.ok) throw new Error(JSON.stringify(j));
+          await pollJob(j.id);
+        } catch (e) {
+          setStatus(`Chyba: <span class="mono">${String(e).slice(0, 4000)}</span>`);
+        } finally {
+          runBtn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
+
