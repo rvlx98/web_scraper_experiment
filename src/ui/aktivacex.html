@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Popelka aktivacex</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,500&family=Source+Sans+3:wght@400;600;650&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --font-ui: "Source Sans 3", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        --font-display: "Cormorant Garamond", Georgia, serif;
+        --bg-base: #141512;
+        --card: #232228;
+        --ink: #f4efe8;
+        --muted: rgba(244, 239, 232, 0.66);
+        --line: rgba(244, 239, 232, 0.14);
+        --accent: #b8c99a;
+        --accent-strong: #8fb876;
+        --gold: #d4c4a8;
+        --ok: #6eb87a;
+        --danger: #c75c5c;
+        --warn: #d4a84b;
+      }
+      html[data-theme="light"] {
+        --bg-base: #f3efe8;
+        --card: rgba(255, 255, 255, 0.88);
+        --ink: #1e1c1a;
+        --muted: rgba(30, 28, 26, 0.62);
+        --line: rgba(30, 28, 26, 0.12);
+        --accent: #4a7a54;
+        --accent-strong: #3d6b47;
+        --gold: #8a7355;
+        --ok: #3d8f4f;
+        --danger: #b84545;
+        --warn: #b8860b;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        position: relative;
+        font-family: var(--font-ui);
+        color: var(--ink);
+        /* Popelka: půlnoc nad hradem, krb dole v popelu, měsíc a hvězdy */
+        background-color: #0c0a12;
+        background-image:
+          radial-gradient(ellipse 100% 70% at 50% -8%, rgba(72, 58, 120, 0.45), transparent 58%),
+          radial-gradient(circle 380px at 10% 4%, rgba(230, 236, 255, 0.18), transparent 72%),
+          radial-gradient(circle 200px at 88% 10%, rgba(200, 210, 240, 0.1), transparent 70%),
+          radial-gradient(ellipse 120% 60% at 50% 0%, rgba(30, 24, 55, 0.9), transparent 52%),
+          radial-gradient(ellipse 85% 55% at 100% 88%, rgba(55, 95, 70, 0.18), transparent 58%),
+          radial-gradient(ellipse 95% 50% at 50% 102%, rgba(220, 90, 45, 0.16), transparent 58%),
+          radial-gradient(ellipse 80% 35% at 50% 100%, rgba(25, 20, 18, 0.75), transparent 65%),
+          linear-gradient(
+            172deg,
+            #141029 0%,
+            #1a1430 18%,
+            #252038 42%,
+            #2e2828 68%,
+            #1a1614 88%,
+            #0e0c0c 100%
+          );
+        background-attachment: fixed;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.5;
+        mix-blend-mode: screen;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Ccircle cx='32' cy='28' r='0.9' fill='%23ffffff' opacity='0.55'/%3E%3Ccircle cx='118' cy='14' r='0.65' fill='%23e8ecff' opacity='0.5'/%3E%3Ccircle cx='198' cy='36' r='0.75' fill='%23ffffff' opacity='0.45'/%3E%3Ccircle cx='74' cy='96' r='0.55' fill='%23fff' opacity='0.4'/%3E%3Ccircle cx='182' cy='108' r='0.65' fill='%23dde4ff' opacity='0.42'/%3E%3Ccircle cx='24' cy='168' r='0.5' fill='%23fff' opacity='0.35'/%3E%3Ccircle cx='228' cy='188' r='0.7' fill='%23f2f4ff' opacity='0.38'/%3E%3Ccircle cx='138' cy='212' r='0.55' fill='%23fff' opacity='0.32'/%3E%3Ccircle cx='244' cy='72' r='0.55' fill='%23e4eaff' opacity='0.4'/%3E%3Ccircle cx='156' cy='58' r='0.48' fill='%23fff' opacity='0.36'/%3E%3Ccircle cx='50' cy='200' r='0.52' fill='%23fff' opacity='0.3'/%3E%3C/svg%3E");
+        background-size: 260px 260px;
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.07;
+        background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.5) 50%, transparent 62%);
+      }
+
+      html[data-theme="light"] body {
+        /* Popelka ve dne: zámek v mlze, bálové šály, krbová siň, hrách v trávě */
+        background-color: #e8eaf4;
+        background-image:
+          radial-gradient(ellipse 110% 75% at 50% -12%, rgba(180, 200, 238, 0.55), transparent 56%),
+          radial-gradient(circle 340px at 8% -2%, rgba(255, 255, 255, 0.95), transparent 62%),
+          radial-gradient(circle 220px at 92% 6%, rgba(255, 248, 255, 0.55), transparent 68%),
+          radial-gradient(ellipse 70% 50% at 0% 80%, rgba(232, 200, 210, 0.28), transparent 58%),
+          radial-gradient(ellipse 80% 55% at 100% 85%, rgba(160, 200, 160, 0.35), transparent 58%),
+          radial-gradient(ellipse 90% 45% at 45% 108%, rgba(255, 210, 175, 0.22), transparent 58%),
+          linear-gradient(
+            175deg,
+            #f0f4fc 0%,
+            #ebe6f2 22%,
+            #f5eef0 48%,
+            #e8f0e6 72%,
+            #dde6db 100%
+          );
+        background-attachment: fixed;
+      }
+      html[data-theme="light"] body::before {
+        opacity: 0.22;
+        mix-blend-mode: multiply;
+        filter: saturate(0.85);
+      }
+      html[data-theme="light"] body::after {
+        opacity: 0.04;
+        background: linear-gradient(118deg, transparent 35%, rgba(255, 255, 255, 0.75) 50%, transparent 68%);
+      }
+      .wrap {
+        position: relative;
+        z-index: 1;
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 32px 16px 96px;
+      }
+      header h1 {
+        margin: 0 0 4px;
+        font-family: var(--font-display);
+        font-size: 2rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: var(--gold);
+        text-shadow: 0 0 40px rgba(180, 165, 140, 0.2);
+      }
+      html[data-theme="light"] header h1 {
+        text-shadow: none;
+        color: var(--accent-strong);
+      }
+      .tagline {
+        margin: 0 0 14px;
+        font-family: var(--font-display);
+        font-style: italic;
+        font-size: 1.05rem;
+        font-weight: 500;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      header p.lead {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.58;
+        font-size: 0.975rem;
+      }
+      .panel {
+        margin-top: 26px;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--card);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(8px);
+      }
+      html[data-theme="light"] .panel {
+        box-shadow: 0 14px 42px rgba(40, 48, 38, 0.1);
+      }
+      label.pick {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      input[type="file"] {
+        margin-top: 8px;
+        width: 100%;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-top: 16px;
+      }
+      button.primary {
+        border: none;
+        border-radius: 11px;
+        padding: 11px 18px;
+        font-weight: 650;
+        font-family: var(--font-ui);
+        background: linear-gradient(180deg, #a5cfad, var(--accent-strong));
+        color: #0f160f;
+        cursor: pointer;
+        box-shadow: 0 6px 22px rgba(80, 140, 96, 0.28);
+      }
+      html[data-theme="light"] button.primary {
+        background: linear-gradient(180deg, #7ec48c, var(--accent-strong));
+        color: #0c120d;
+        box-shadow: 0 6px 20px rgba(70, 130, 85, 0.22);
+      }
+      button.primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+      .hint {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 14px;
+        line-height: 1.58;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .sw {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+      }
+      .sw.ok {
+        background: var(--ok);
+      }
+      .sw.bad {
+        background: var(--danger);
+      }
+      .sw.unk {
+        background: var(--warn);
+      }
+      .msg {
+        margin-top: 12px;
+        font-size: 14px;
+        white-space: pre-wrap;
+      }
+      .msg.error {
+        color: #f0a8a8;
+      }
+      html[data-theme="light"] .msg.error {
+        color: #a31f1f;
+      }
+      footer {
+        margin-top: 32px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      a.link {
+        color: var(--accent);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body data-theme="">
+    <div class="wrap">
+      <header>
+        <h1>Popelka aktivacex</h1>
+        <p class="tagline">Jako když máte v jedné hromadě popel i hrách — a chcete je mít hezky odděleně.</p>
+        <p class="lead">
+          Tady Popelka jen nestojí u krbu, ale u tabulky: nahrajte Excel (.xlsx) s odkazy aktivacex, stránky projedeme v Chromium, a podle textu na stránce roztřídíme
+          <strong>„Dobrý den“</strong>, <strong>„Dobré odpoledne“</strong> (v pořádku) a <strong>„Neoprávněný přístup“</strong>. Vrátíme workbook se zabarvenými buňkami a sloupci s výsledkem — popel pod jednou barvou, hrách pod druhou.
+        </p>
+      </header>
+
+      <div class="panel">
+        <label class="pick" for="file">Soubor (.xlsx)</label>
+        <input id="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+        <div class="row">
+          <button class="primary" id="btn" type="button" disabled>Vysypat hromadu a roztřídit</button>
+          <span class="pill" id="pill" hidden>Probíhá třídění… může to trvat několik minut</span>
+        </div>
+
+        <div class="hint">
+          URL poznáme z hypertextových odkazů i z prostého textu. Nejdřív bereme adresy s <strong>aktivacex</strong>; když žádné nenajdeme, použijeme všechny http(s) odkazy na prvním listu.<br /><br />
+          <strong>Červeně</strong> „Neoprávněný přístup“ · <strong>zeleně</strong> „Dobrý den“ nebo „Dobré odpoledne“ · <strong>žlutě</strong> cokoli jiného nebo chyba načtení.
+          Navíc list <strong>Rozřazení odkazů</strong> — sloupec <strong>A</strong> zeleně, <strong>B</strong> červeně, <strong>C</strong> žlutě (jedna adresa jen jednou, řazení A–Z).<br />
+          <span class="pill" style="margin-top: 10px">
+            <span class="sw ok"></span> Dobrý den / Dobré odpoledne
+            <span class="sw bad" style="margin-left: 6px"></span> Neoprávněný přístup
+            <span class="sw unk" style="margin-left: 6px"></span> jiné / chyba
+          </span>
+        </div>
+
+        <div class="msg" id="msg" hidden></div>
+      </div>
+
+      <footer>
+        Popelka aktivacex · stránka <code>/aktivacex</code> · zpět k <a class="link" href="/">hlavní analytice</a>
+      </footer>
+    </div>
+
+    <script>
+      const file = document.getElementById("file");
+      const btn = document.getElementById("btn");
+      const msg = document.getElementById("msg");
+      const pill = document.getElementById("pill");
+
+      const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      document.documentElement.setAttribute("data-theme", prefersLight ? "light" : "dark");
+
+      function setMsg(text, isError) {
+        msg.hidden = !text;
+        msg.textContent = text || "";
+        msg.className = "msg" + (isError ? " error" : "");
+      }
+
+      file.addEventListener("change", () => {
+        btn.disabled = !file.files?.length;
+        setMsg("");
+      });
+
+      btn.addEventListener("click", async () => {
+        const f = file.files?.[0];
+        if (!f) return;
+        btn.disabled = true;
+        pill.hidden = false;
+        setMsg("");
+
+        const fd = new FormData();
+        fd.append("file", f, f.name);
+
+        const outName = "popelka-aktivacex-vysledek.xlsx";
+
+        try {
+          const res = await fetch("/api/aktivacex/check", { method: "POST", body: fd });
+          const ct = res.headers.get("content-type") || "";
+          if (!res.ok) {
+            const j = ct.includes("application/json") ? await res.json() : null;
+            throw new Error(j?.error || `HTTP ${res.status}`);
+          }
+          if (!ct.includes("spreadsheetml")) {
+            const t = await res.text();
+            throw new Error("Neočekávaná odpověď serveru: " + t.slice(0, 200));
+          }
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = outName;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          setMsg("Hotovo — soubor „" + outName + "“ by se měl stáhnout.");
+        } catch (e) {
+          setMsg(String(e?.message || e), true);
+        } finally {
+          pill.hidden = true;
+          btn.disabled = !file.files?.length;
+        }
+      });
+    </script>
+  </body>
+</html>

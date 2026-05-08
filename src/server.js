@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
@@ -6,12 +7,25 @@ import { analyzeWebsite } from "./web/analyzeWebsite.js";
 import { renderReportMarkdown } from "./web/renderReportMarkdown.js";
 import { renderAgentPromptMarkdown } from "./web/renderAgentPromptMarkdown.js";
 import { renderInsightsMarkdown } from "./web/renderInsightsMarkdown.js";
+import { processAktivacexXlsxBuffer, getResolvedAktivacexLimits } from "./aktivacex/processAktivacexXlsx.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json({ limit: "2mb" }));
+
+const aktivacexUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 35 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const name = String(file.originalname || "");
+    if (!/\.xlsx$/i.test(name)) {
+      return cb(new Error("Nahrajte soubor s příponou .xlsx (Excel 2007+)."));
+    }
+    return cb(null, true);
+  }
+});
 
 const JOBS = new Map(); // id -> { status, startedAt, finishedAt, error, result }
 let jobSeq = 0;
@@ -22,6 +36,35 @@ const AnalyzeRequestSchema = z.object({
   maxDepth: z.number().int().min(0).max(5).optional().default(2),
   timeoutMsPerPage: z.number().int().min(2000).max(90000).optional().default(25000),
   allowExternalAssets: z.boolean().optional().default(true)
+});
+
+app.get("/aktivacex", (req, res) => {
+  res.sendFile(path.join(__dirname, "ui", "aktivacex.html"));
+});
+
+app.post("/api/aktivacex/check", (req, res, next) => {
+  aktivacexUpload.single("file")(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message || String(err) });
+    next();
+  });
+}, async (req, res) => {
+  try {
+    if (!req.file?.buffer) {
+      return res.status(400).json({ error: "Chybí soubor (pole file)." });
+    }
+    const out = await processAktivacexXlsxBuffer(req.file.buffer, {
+      timeoutMsPerUrl: 28000
+    });
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", 'attachment; filename="popelka-aktivacex-vysledek.xlsx"');
+    res.send(out);
+  } catch (e) {
+    const msg = e?.message || String(e);
+    res.status(400).json({ error: msg });
+  }
 });
 
 app.get("/", (req, res) => {
@@ -105,6 +148,10 @@ app.use("/static", express.static(path.join(__dirname, "ui")));
 const port = Number(process.env.PORT || 3000);
 app.listen(port, () => {
   // eslint-disable-next-line no-console
+  const ax = getResolvedAktivacexLimits();
   console.log(`AI web analyst MVP listening on http://localhost:${port}`);
+  console.log(
+    `Popelka aktivacex: http://localhost:${port}/aktivacex (${ax.maxDistinctUrls} jedinečných URL, ${ax.maxCellsWithLinks} buněk, paralelismus ${ax.fetchConcurrency})`
+  );
 });
 
